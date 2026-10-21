@@ -1,5 +1,12 @@
 # 自动文献阅读助手
 
+本项目的原创代码和文档采用 **[PolyForm Noncommercial License 1.0.0](LICENSE)**，
+允许在许可证规定的非商业用途下使用、修改和分发。其他用途需取得作者单独授权，
+可通过 [GitHub](https://github.com/XinghaoJ) 联系作者，具体条款以 LICENSE 为准。
+分发时须保留许可证和 [NOTICE](NOTICE) 中的 Required Notice 声明。
+本项目属于源码可见项目；因含非商业使用限制，不属于 OSI 定义的开源软件。
+第三方组件遵循各自的许可证，不受本项目许可证重新授权。
+
 支持 Google Scholar / OpenAlex 检索和摘要筛选、DOI 提取与核验补查、Zotero 自动下载、手动导入和本地文献知识库问答。
 关键词和关注问题在 `user_settings.py` 中配置，也可用 `--question` 临时覆盖关注问题。
 
