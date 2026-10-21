@@ -1,0 +1,14 @@
+{
+  "manifest_version": 2,
+  "name": "Literature Reading Assistant Bridge",
+  "version": "0.2.0",
+  "description": "接收本机文献助手的 DOI 下载任务，并调用 Zotero 获取可用全文。",
+  "applications": {
+    "zotero": {
+      "id": "literature-reading-bridge@local.invalid",
+      "update_url": "https://example.invalid/literature-bridge/updates.json",
+      "strict_min_version": "7.0",
+      "strict_max_version": "10.0.*"
+    }
+  }
+}

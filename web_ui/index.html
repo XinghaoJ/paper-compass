@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>文献阅读助手 · Paper Desk</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="study-picker"><label for="study-select">当前调研</label><div class="study-picker-row"><select id="study-select" class="study-control" aria-label="当前调研"></select><button id="new-study" class="button secondary study-control" type="button">新建</button></div><button id="cleanup-study" class="button danger small study-control" type="button">清除此调研文件</button></div>
+    <nav aria-label="主要导航">
+      <button class="nav-item active" data-tab="models">模型配置</button>
+      <button class="nav-item" data-tab="workflow">文献筛选</button>
+      <button class="nav-item" data-tab="supplement">文献补充</button>
+      <button class="nav-item" data-tab="qa">知识库问答</button>
+      <button class="nav-item" data-tab="paths">路径设置</button>
+    </nav>
+    <button id="refresh-interface" class="button secondary small" type="button">刷新界面</button>
+    <section id="activity-panel" class="card activity-card" aria-label="任务记录"><div class="activity-heading"><div><span class="section-kicker">任务记录</span><h2 id="job-title">准备就绪</h2></div><div class="activity-actions"><span id="job-status" class="badge neutral">等待任务</span><button id="stop-task" class="button danger small" disabled>停止任务</button></div></div><pre id="task-log" aria-live="polite">点击上方按钮开始，任务进度和结果会显示在这里。</pre></section>
+  </aside>
+  <div class="shell">
+    <main>
+      <div id="notice" class="notice" role="status" hidden></div>
+      <section id="tab-models" class="tab-panel">
+        <div class="card page-card shared-model-card">
+        <div class="page-heading"><div><h1>模型配置</h1><p>共用一个密钥，为筛选和问答分别选择模型版本。</p></div><span id="key-status" class="badge neutral">未配置</span></div>
+        <section aria-label="共用模型接口">
+          <div class="settings-grid">
+            <label>API Key<input id="shared-model-key" type="password" autocomplete="off" placeholder="输入 API Key"></label>
+            <label>接口类型<select id="shared-model-provider"><option value="">请选择接口类型</option><option value="gemini">Gemini</option><option value="openai">OpenAI / GPT</option><option value="deepseek">DeepSeek</option></select></label>
+          </div>
+          <p id="provider-hint" class="field-help" aria-live="polite">可识别部分密钥格式；无法区分时，请手动选择服务商。</p>
+          <div id="model-settings" class="model-grid"></div>
+          <p id="model-catalog-status" class="field-help" role="status">点击“应用密钥”获取当前接口的模型版本。</p>
+        </section>
+        <div class="manual-toolbar"><button id="apply-key" class="button primary">应用密钥</button><button class="button secondary" data-tab="workflow">前往文献筛选 →</button></div>
+        <p class="field-help">密钥仅在本次运行中使用。模型版本选择后自动保存。</p>
+        </div>
+      </section>
+      <section id="tab-workflow" class="tab-panel" hidden>
+        <div class="screening-wizard card">
+          <div class="wizard-viewport">
+            <section class="wizard-step" data-step="0" aria-labelledby="research-heading">
+              <h1 id="research-heading" tabindex="-1">你想研究什么？</h1>
+              <p class="wizard-description">告诉我研究方向，找到与你的问题相关的文献。</p>
+              <label>关键词<input data-path="research.keywords" required></label>
+              <label>关注问题<textarea data-path="research.focus_question" rows="4" placeholder="你希望这些文献涉及什么问题？" required></textarea></label>
+              <div class="form-row three"><label>起始年份<input type="number" data-path="research.year_start" min="1" max="9999" required></label><label>结束年份<input type="number" data-path="research.year_end" min="1" max="9999" required></label><label>检索上限<input type="number" data-path="research.max_papers" min="1" required></label></div>
+            </section>
+            <section class="wizard-step" data-step="1" aria-labelledby="search-heading" hidden>
+              <h1 id="search-heading" tabindex="-1">开始检索</h1>
+              <p class="wizard-description">检索文献，按关注问题筛选，并获取 DOI。</p>
+              <button class="button primary run wizard-run" data-action="search">开始检索 →</button>
+            </section>
+            <section class="wizard-step" data-step="2" aria-labelledby="zotero-heading" hidden>
+              <h1 id="zotero-heading" tabindex="-1">Zotero 插件</h1>
+              <p class="wizard-description">首次使用时打包插件，在 Zotero 中从文件安装生成的 XPI，然后重启 Zotero。</p>
+              <div class="manual-toolbar"><button class="button primary run" data-action="build-bridge">打包插件</button><button class="button secondary run" data-action="zotero-check">检查 Zotero 连接</button></div>
+              <p class="field-help">如果插件已安装且连接正常，可以直接进入下一步。</p>
+            </section>
+            <section class="wizard-step" data-step="3" aria-labelledby="download-heading" hidden>
+              <h1 id="download-heading" tabindex="-1">文献下载</h1>
+              <p class="wizard-description">下载筛选命中的文献。未完成的文章可在“文献补充”中手动补齐。</p>
+              <div class="manual-toolbar"><button class="button primary run wizard-run" data-action="download">下载 PDF ↓</button></div>
+            </section>
+          </div>
+          <div class="wizard-navigation"><button id="wizard-prev" class="wizard-arrow" aria-label="上一步" disabled>←</button><span id="wizard-next-label">下一步：开始检索</span><button id="wizard-next" class="wizard-arrow primary" aria-label="下一步">→</button></div>
+        </div>
+      </section>
+      <section id="tab-supplement" class="tab-panel" hidden>
+        <div class="card supplement-slider">
+        <div class="supplement-tabs" role="tablist" aria-label="文献补充方式">
+          <button id="missing-tab" role="tab" aria-selected="true" aria-controls="manual-panel" data-supplement="missing" class="active">补足缺失文献</button>
+          <button id="extra-tab" role="tab" aria-selected="false" aria-controls="extra-panel" data-supplement="extra">添加其他文献</button>
+        </div>
+        <div class="supplement-viewport">
+        <section id="manual-panel" class="supplement-slide" role="tabpanel" aria-labelledby="missing-tab">
+          <button id="import-missing" class="large-import manual-control"><span class="import-symbol">＋</span><strong>批量导入缺失PDF</strong><small>选择多个已下载文件，确认对应文章后统一导入</small></button>
+          <div id="missing-mapping" hidden></div>
+          <div class="manual-toolbar missing-list-toolbar"><span id="manual-count" class="badge neutral">待加载</span><button id="refresh-manual" class="text-button manual-control">刷新清单</button><a id="manual-report" class="file-link" hidden>导出清单</a></div>
+          <div id="manual-list" tabindex="0" role="region" aria-label="待补充文献清单"><p class="field-help">正在读取下载记录…</p></div>
+        </section>
+        <section id="extra-panel" class="supplement-slide" role="tabpanel" aria-labelledby="extra-tab" hidden>
+          <div id="pdf-drop-zone" class="large-import" tabindex="0" role="button" aria-label="导入其他文献 PDF"><span class="import-symbol">＋</span><strong>导入其他文献 PDF</strong><small>点击选择或拖入，支持多选</small></div>
+        </section>
+        </div>
+        <div class="wizard-navigation"><button id="supplement-prev" class="wizard-arrow" aria-label="上一个补充方式" disabled>←</button><span id="supplement-step">01 / 02</span><button id="supplement-next" class="wizard-arrow primary" aria-label="下一个补充方式">→</button></div>
+        </div>
+        <div class="supplement-footer"><p class="field-help">导入后点击“更新知识库”，即可用于后续问答。单份 PDF 不超过 50 MB。</p><button class="button secondary run" data-action="index">更新知识库</button></div>
+        <p id="supplement-status" class="field-help" role="status" hidden></p>
+        <details class="import-help"><summary>保存位置与导入说明</summary><p id="manual-destination" class="field-help"></p><p class="field-help">原文件保留，重复文件自动跳过。导入不调用模型；更新知识库需要模型接口。知识库输入目录留空时沿用下载目录。其他文献不自动关联 DOI。</p></details>
+        <pre id="import-results" aria-live="polite" hidden></pre>
+      </section>
+      <section id="tab-qa" class="tab-panel" hidden>
+        <div class="card page-card">
+        <div class="page-heading"><div><h1>知识库问答</h1><p>从已建库的 PDF 检索原文，回答附文章、DOI 和 PDF 页码。</p></div></div>
+        <section class="question-card"><label for="qa-question">你想了解什么？</label><textarea id="qa-question" data-path="qa.question" rows="4" maxlength="4000" required></textarea><div class="question-toolbar"><label class="checkbox"><input type="checkbox" id="retrieve-only">只检索原文<span>不调用回答模型</span></label><button class="button primary run" data-action="ask">检索并提问</button></div></section>
+        <section class="answer-card" id="answer-panel"><div class="empty-state"><h2>回答与引用</h2><p>提问后，回答和对应原文会显示在这里。</p></div></section>
+        </div>
+      </section>
+      <section id="tab-paths" class="tab-panel" hidden>
+        <div class="card page-card">
+        <div class="page-heading"><div><h1>路径设置</h1><p>管理文献和知识库的保存位置。</p></div></div>
+        <div class="settings-grid" id="path-settings"></div>
+        <button id="apply-paths" class="button secondary">应用路径</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <dialog id="study-dialog" aria-labelledby="study-dialog-title">
+    <form id="study-form">
+      <h2 id="study-dialog-title">新建调研</h2>
+      <p class="field-help">保留模型配置，研究条件从空白开始。文献、筛选记录、知识库和问答报告将独立保存。</p>
+      <label for="study-name">调研名称<input id="study-name" maxlength="80" required></label>
+      <label for="study-directory">保存位置</label><div class="path-input-row"><input id="study-directory" required><button id="browse-study-directory" class="button secondary" type="button" aria-label="浏览新调研保存位置">浏览</button></div>
+      <p class="field-help">将在该位置创建同名文件夹，不移动原有调研资料。</p>
+      <div class="manual-toolbar"><button class="button primary study-control" type="submit">创建调研</button><button id="cancel-study" class="button secondary" type="button">取消</button></div>
+    </form>
+  </dialog>
+  <dialog id="cleanup-dialog" aria-labelledby="cleanup-title">
+    <form id="cleanup-form">
+      <h2 id="cleanup-title">清除此调研文件</h2>
+      <p id="cleanup-summary"></p>
+      <p class="field-help">将下列位置的 PDF、筛选结果、DOI、下载记录、知识库和问答报告移入 Windows 回收站。保留调研名称、配置和模型密钥，不清理 Zotero 中的文献。</p>
+      <pre id="cleanup-paths"></pre>
+      <label for="cleanup-name">输入当前调研名称以确认<input id="cleanup-name" autocomplete="off" required></label>
+      <div class="manual-toolbar"><button id="confirm-cleanup" class="button danger" type="submit" disabled>确认清理，移至回收站</button><button id="cancel-cleanup" class="button secondary" type="button">取消</button></div>
+    </form>
+  </dialog>
+</body>
+</html>

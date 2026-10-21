@@ -1,0 +1,8 @@
+google-genai>=1.0,<2.0
+scholarly>=1.7,<2.0
+# scholarly 1.7 使用 bibtexparser.bibdatabase；2.x 已移除此模块。
+bibtexparser>=1.4,<2.0
+requests>=2.31,<3.0
+pypdf>=6.21.1,<7.0
+# 解析部分论文 PDF 中的 CFF Type1 字体编码，减少文字提取缺字和乱码。
+fonttools>=4.0,<5.0
